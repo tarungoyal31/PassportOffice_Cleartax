@@ -8,6 +8,7 @@ package passportscheduling;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
 
 /**
@@ -22,10 +23,9 @@ public class PassportOffice {
     private final ArrayList<Officer> documentOfficers = new ArrayList();
     private final ArrayList<Officer> policeOfficers = new ArrayList();
     private final ArrayList<Officer> bioMetricsOfficers = new ArrayList();
-    private final Set<Applicant> waitingApplicants = new HashSet();
-    private final Set<Applicant> documentVerifiedApplicants = new HashSet();
-    private final Set<Applicant> policeVerifiedApplicants = new HashSet();
-    private final Set<Applicant> biometricVerifiedApplicants = new HashSet();
+    private final LinkedList<Applicant> waitingApplicants = new LinkedList();
+    private final LinkedList<Applicant> documentVerifiedApplicants = new LinkedList();
+    private final LinkedList<Applicant> policeVerifiedApplicants = new LinkedList();
     
     private final ArrayList<Applicant> applicantList;
     private final HashMap<Integer, Applicant> applicantArrivalTimeMap;
@@ -73,8 +73,8 @@ public class PassportOffice {
     public void startWorking() {
         passportTimer = new PassportTimer();
         for (int i = 0; i < PassportTimer.TOTAL_TIME; i++) {
-            passportTimer.incrementMinute();
             increaseTimer();
+            passportTimer.incrementMinute();
             if (finishingTime != -1) {
                 return;
             }
@@ -82,46 +82,39 @@ public class PassportOffice {
     }
     
     public void increaseTimer() {
-        for(Officer bioMetricOfficer : bioMetricsOfficers) {
-            if (bioMetricOfficer.getState() == Officer.OfficerState.IDLE){
-                Applicant biometricVerificationApplicant = 
-                        schedulingStrategy.getNextApplicantForBiometricsVerification(policeVerifiedApplicants);
-                bioMetricOfficer.setCurrentApplicant(biometricVerificationApplicant);
-                    policeVerifiedApplicants.remove(bioMetricOfficer.getApplicant());
-            } else {
-                Officer.OfficerState bioMetricOfficerState = bioMetricOfficer.updateTime(passportTimer.getTime());
-                if (bioMetricOfficerState == Officer.OfficerState.IDLE) {
-                    biometricVerifiedApplicants.add(bioMetricOfficer.getApplicant());
-                    remainingApplicants.remove(bioMetricOfficer.getApplicant());
-                    bioMetricOfficer.setCurrentApplicant(null);
-                }
-            }
-        }
-        for(Officer policeOfficer : policeOfficers) {
-            if (policeOfficer.getState() == Officer.OfficerState.IDLE){
-                Applicant policeVerificationApplicant = 
-                        schedulingStrategy.getNextApplicantForPoliceVerification(documentVerifiedApplicants);
-                policeOfficer.setCurrentApplicant(policeVerificationApplicant);
-                documentVerifiedApplicants.remove(policeOfficer.getApplicant());
-            } else {
-                Officer.OfficerState policeOfficerState = policeOfficer.updateTime(passportTimer.getTime());
-                if (policeOfficerState == Officer.OfficerState.IDLE) {
-                    policeVerifiedApplicants.add(policeOfficer.getApplicant());
-                    policeOfficer.setCurrentApplicant(null);
-                }
-            }
-        }
         for(Officer documentOfficer : documentOfficers) {
             if (documentOfficer.getState() == Officer.OfficerState.IDLE){
-                Applicant documentVerificationApplicant = 
-                        schedulingStrategy.getNextApplicantForDocumentVerification(waitingApplicants, passportTimer.getTime());
-                documentOfficer.setCurrentApplicant(documentVerificationApplicant);
-                    waitingApplicants.remove(documentOfficer.getApplicant());
+                assignApplicantToOfficer(documentOfficer, waitingApplicants);
             } else {
                 Officer.OfficerState documentOfficerState = documentOfficer.updateTime(passportTimer.getTime());
                 if (documentOfficerState == Officer.OfficerState.IDLE) {
                     documentVerifiedApplicants.add(documentOfficer.getApplicant());
                     documentOfficer.setCurrentApplicant(null);
+                    assignApplicantToOfficer(documentOfficer, waitingApplicants);
+                }
+            }
+        }
+        for(Officer policeOfficer : policeOfficers) {
+            if (policeOfficer.getState() == Officer.OfficerState.IDLE){
+                assignApplicantToOfficer(policeOfficer, documentVerifiedApplicants);
+            } else {
+                Officer.OfficerState policeOfficerState = policeOfficer.updateTime(passportTimer.getTime());
+                if (policeOfficerState == Officer.OfficerState.IDLE) {
+                    policeVerifiedApplicants.add(policeOfficer.getApplicant());
+                    policeOfficer.setCurrentApplicant(null);
+                    assignApplicantToOfficer(policeOfficer, documentVerifiedApplicants);
+                }
+            }
+        }
+        for(Officer bioMetricOfficer : bioMetricsOfficers) {
+            if (bioMetricOfficer.getState() == Officer.OfficerState.IDLE){
+                assignApplicantToOfficer(bioMetricOfficer, policeVerifiedApplicants);
+            } else {
+                Officer.OfficerState bioMetricOfficerState = bioMetricOfficer.updateTime(passportTimer.getTime());
+                if (bioMetricOfficerState == Officer.OfficerState.IDLE) {
+                    remainingApplicants.remove(bioMetricOfficer.getApplicant());
+                    bioMetricOfficer.setCurrentApplicant(null);
+                    assignApplicantToOfficer(bioMetricOfficer, policeVerifiedApplicants);
                 }
             }
         }
@@ -129,6 +122,13 @@ public class PassportOffice {
         if (remainingApplicants.isEmpty()) {
             workFinished();
         }
+    }
+    
+    public void assignApplicantToOfficer(Officer officer, LinkedList<Applicant> applicantList) {
+        Applicant applicant =
+                schedulingStrategy.getNextApplicantForPoliceVerification(applicantList);
+        officer.setCurrentApplicant(applicant);
+        applicantList.remove(officer.getApplicant());
     }
     
     public void workFinished() {

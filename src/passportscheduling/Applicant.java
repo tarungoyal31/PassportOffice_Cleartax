@@ -11,14 +11,23 @@ package passportscheduling;
  */
 public class Applicant {
     private final int token;
-    private int arrivalTime;
+    private final int arrivalTime;
+    private final int processingTime;
     private int documentTime;
     private int policeTime;
     private int bioMetricsTime;
     private int finishedTime;
     private int waitingTime;
-    private int processingTime;
     private ApplicantState state;
+
+    Applicant(Applicant applicant) {
+        this.token = applicant.token;
+        this.arrivalTime = applicant.arrivalTime;
+        this.documentTime = applicant.documentTime;
+        this.policeTime = applicant.policeTime;
+        this.bioMetricsTime = applicant.bioMetricsTime;
+        this.processingTime = documentTime + policeTime + bioMetricsTime; 
+    }
     
     public enum ApplicantState {
         ARRIVED,
@@ -81,10 +90,10 @@ public class Applicant {
      * Update the remaining waiting time in the currentState. Returns whether
      * the job is completed.
      * @param officerType
+     * @param time
      * @return 
      */
     public boolean updateTime(Officer.OfficerType officerType, int time) {
-            System.out.println(officerType.toString());
         switch (officerType) {
             case DOCUMEMT_VERIFICATION :
                 documentTime -= 1;

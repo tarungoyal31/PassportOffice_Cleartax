@@ -5,7 +5,7 @@
  */
 package passportscheduling;
 
-import java.util.Set;
+import java.util.LinkedList;
 
 /**
  *
@@ -13,9 +13,9 @@ import java.util.Set;
  */
 public interface SchedulingStrategy {
     
-    Applicant getNextApplicantForDocumentVerification(Set<Applicant> waitingApplicants, int time);
+    Applicant getNextApplicantForDocumentVerification(LinkedList<Applicant> waitingApplicants, int time);
     
-    Applicant getNextApplicantForPoliceVerification(Set<Applicant> documentVerifiedApplicants);
+    Applicant getNextApplicantForPoliceVerification(LinkedList<Applicant> documentVerifiedApplicants);
     
-    Applicant getNextApplicantForBiometricsVerification(Set<Applicant> policeVerifiedApplicants);
+    Applicant getNextApplicantForBiometricsVerification(LinkedList<Applicant> policeVerifiedApplicants);
 }

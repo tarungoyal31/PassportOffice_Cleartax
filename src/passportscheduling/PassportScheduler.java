@@ -9,7 +9,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  *
@@ -22,7 +21,7 @@ public class PassportScheduler {
      * @throws java.io.IOException
      */
     public static void main(String[] args) throws IOException{
-        ArrayList<Applicant> applicantList = new ArrayList();
+        ArrayList<Applicant> applicantListBase = new ArrayList();
         BufferedReader br  = new BufferedReader(new InputStreamReader(System.in));
         int applicantCount = Integer.parseInt(br.readLine());
         for (int i = 0; i < applicantCount; i++) {
@@ -33,20 +32,33 @@ public class PassportScheduler {
             int biometricsTime = Integer.parseInt(applicantInputs[3]);
             Applicant applicant = new Applicant(
                     i, arrivalTime, documentTime, policeTime, biometricsTime);
-            applicantList.add(applicant);
+            applicantListBase.add(applicant);
         }
-        PassportOffice passportOffice = new PassportOffice(applicantList, new FifoSchedulingStrategy());
-        passportOffice.startWorking();
-        System.out.println("Finishing time is: " + passportOffice.getFinishingTime());
-        int averageTime = 0;
-        for(Applicant applicant : applicantList) {
-            averageTime += applicant.getFinishedTime();
+        SchedulingStrategy[] schedulingStrategies = 
+        {
+            new TokenBasedSchedulingStrategy(),
+            new FifoSchedulingStrategy(),
+            new RandomSchedulingStrategy()
+        };
+        for (SchedulingStrategy strategy : schedulingStrategies) {
+            ArrayList<Applicant> applicantList = new ArrayList();
+            for (Applicant applicant : applicantListBase) {
+                applicantList.add(new Applicant(applicant));
+            }
+            PassportOffice passportOffice = new PassportOffice(applicantList, strategy);
+            System.out.println("Strategy: " + strategy.getClass().toString());
+            passportOffice.startWorking();
+            System.out.println("Finishing time is: " + passportOffice.getFinishingTime());
+            int averageTime = 0;
+            for(Applicant applicant : applicantList) {
+                averageTime += applicant.getFinishedTime();
+            }
+            System.out.println("Average time per person: " + ((double) averageTime / applicantList.size()));
+            int averageWaitingTime = 0;
+            for(Applicant applicant : applicantList) {
+                averageWaitingTime += applicant.getFinishedTime() - applicant.getTotalProcessingTime();
+            }
+            System.out.println("Average waiting time per person: " + ((double) averageWaitingTime / applicantList.size()));
         }
-        System.out.println("Average time per person: " + (averageTime / applicantList.size() -3));
-        int averageWaitingTime = 0;
-        for(Applicant applicant : applicantList) {
-            averageWaitingTime += applicant.getFinishedTime() - applicant.getTotalProcessingTime();
-        }
-        System.out.println("Average waiting time per person: " + (averageWaitingTime / applicantList.size() -3));
     }
 }

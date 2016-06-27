@@ -5,51 +5,39 @@
  */
 package passportscheduling;
 
-import java.util.Set;
+import java.util.LinkedList;
 
 /**
  *
  * @author tarungoyal
  */
-public class FifoSchedulingStrategy implements SchedulingStrategy {
-
-    @Override
-    public Applicant getNextApplicantForDocumentVerification(Set<Applicant> waitingApplicants, int time) {
-        int leastToken = 999999999;
-        Applicant applicant = null;
-        for (Applicant waitingApplicant : waitingApplicants) {
-            if (waitingApplicant.getToken() < leastToken && waitingApplicant.getArrivalTime() >= time) {
-                leastToken = waitingApplicant.getToken();
-                applicant = waitingApplicant;
-            }
-        }
-        return applicant;
-    }
-
-    @Override
-    public Applicant getNextApplicantForPoliceVerification(Set<Applicant> documentVerifiedApplicants) {
-        int leastToken = 999999999;
-        Applicant applicant = null;
-        for (Applicant documentApplicant : documentVerifiedApplicants) {
-            if (documentApplicant != null && documentApplicant.getToken() < leastToken) {
-                leastToken = documentApplicant.getToken();
-                applicant = documentApplicant;
-            }
-        }
-        return applicant;
-    }
-
-    @Override
-    public Applicant getNextApplicantForBiometricsVerification(Set<Applicant> policeVerifiedApplicants) {
-        int leastToken = 999999999;
-        Applicant applicant = null;
-        for (Applicant biometricApplicant : policeVerifiedApplicants) {
-            if (biometricApplicant.getToken() < leastToken) {
-                leastToken = biometricApplicant.getToken();
-                applicant = biometricApplicant;
-            }
-        }
-        return applicant;
-    }
+public class FifoSchedulingStrategy implements SchedulingStrategy{
     
+    @Override
+    public Applicant getNextApplicantForDocumentVerification(LinkedList<Applicant> waitingApplicants, int time) {
+        if (waitingApplicants != null && waitingApplicants.size() > 0) {
+            for (Applicant applicant : waitingApplicants) {
+                if (applicant.getArrivalTime() <= time) {
+                    return applicant;
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Applicant getNextApplicantForPoliceVerification(LinkedList<Applicant> documentVerifiedApplicants) {
+        return (documentVerifiedApplicants != null 
+                && documentVerifiedApplicants.size() > 0) 
+                ? documentVerifiedApplicants.getFirst()
+                : null;
+    }
+
+    @Override
+    public Applicant getNextApplicantForBiometricsVerification(LinkedList<Applicant> policeVerifiedApplicants) {
+        return (policeVerifiedApplicants != null 
+                && policeVerifiedApplicants.size() > 0) 
+                ? policeVerifiedApplicants.getFirst()
+                : null;
+    }
 }
