@@ -1,13 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package passportscheduling;
 
 /**
- *
- * @author tarungoyal
+ * Generic officer class. Each officer is one of three given {@link OfficerType}
  */
 public class Officer {
     private Applicant currentApplicant;
@@ -36,6 +30,8 @@ public class Officer {
             return;
         }
         officerState = OfficerState.WORKING;
+        // UpdateState is of no use as of now. But it is good to maintain state if
+        // more functionalities are to be added in future.
         switch (officerType) {
             case DOCUMEMT_VERIFICATION: 
                 currentApplicant.updateState(Applicant.ApplicantState.DOCUMENT_VERIFICATION);
@@ -49,10 +45,18 @@ public class Officer {
         }
     }
     
-    public OfficerState updateTime(int time) {
+    /**
+     * Increase time passed for the officer. Here state of officer is changed
+     * according to passage of time.
+     * @param time current time in minutes passed after 9 a.m.
+     * @return OfficerState state of officer after passage of time.
+     */
+    public OfficerState incrementTimer(int time) {
         if (currentApplicant == null) return OfficerState.IDLE;
-        boolean isFinished = currentApplicant.updateTime(officerType, time);
+        boolean isFinished = currentApplicant.incrementTimer(officerType, time);
         if (isFinished) {
+        // UpdateState is of no use as of now. But it is good to maintain state if
+        // more functionalities are to be added in future.
             switch (officerType) {
                 case DOCUMEMT_VERIFICATION:
                     currentApplicant.updateState(Applicant.ApplicantState.POLICE_VERIFICATION_WAITING);

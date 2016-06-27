@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package passportscheduling;
 
 import java.io.BufferedReader;
@@ -11,12 +6,20 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 /**
- *
- * @author tarungoyal
+ * PassportScheduler class containing main function.
  */
 public class PassportScheduler {
 
     /**
+     * Input:
+     * First line is an integer applicantCount giving number of applicants.
+     * Following applicantCount lines have 4 space separated integers denoting
+     * arrival time, document verification time, police verification time and
+     * biometrics verification times respectively.
+     * Sample input:
+     * 2
+     * 1 1 2 1
+     * 2 1 1 1
      * @param args the command line arguments
      * @throws java.io.IOException
      */
@@ -41,6 +44,9 @@ public class PassportScheduler {
             new RandomSchedulingStrategy()
         };
         for (SchedulingStrategy strategy : schedulingStrategies) {
+            // New copy of applicants are made and placed in a list so that even
+            // if applicant is modify during one simulation. Next simulation must 
+            // not get affected.
             ArrayList<Applicant> applicantList = new ArrayList();
             for (Applicant applicant : applicantListBase) {
                 applicantList.add(new Applicant(applicant));

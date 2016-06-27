@@ -1,15 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package passportscheduling;
 
 import java.util.LinkedList;
 
 /**
- *
- * @author tarungoyal
+ * First in first out Scheduling strategy. Here first person to reach a particular
+ * counter is entertained first.
  */
 public class FifoSchedulingStrategy implements SchedulingStrategy{
     

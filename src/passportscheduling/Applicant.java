@@ -1,13 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package passportscheduling;
 
 /**
- *
- * @author tarungoyal
+ * Applicant Class Symbolizing a passport applicant.
  */
 public class Applicant {
     private final int token;
@@ -29,6 +23,9 @@ public class Applicant {
         this.processingTime = documentTime + policeTime + bioMetricsTime; 
     }
     
+    /**
+     * Not in use at present but it is good to maintain states in applicant too.
+     */
     public enum ApplicantState {
         ARRIVED,
         DOCUMENT_VERIFICATION,
@@ -51,6 +48,11 @@ public class Applicant {
         this.processingTime = documentTime + policeTime + biometricsTime;
     }
     
+    /**
+     * Returns total processing time for a particular Officer type.
+     * @param officerType type of officer for which work is to be given.
+     * @return processing time depending upon type of officer.
+     */
     public int getProcessingTime(Officer.OfficerType officerType) {
         switch (officerType) {
             case DOCUMEMT_VERIFICATION :
@@ -89,11 +91,11 @@ public class Applicant {
     /**
      * Update the remaining waiting time in the currentState. Returns whether
      * the job is completed.
-     * @param officerType
-     * @param time
-     * @return 
+     * @param officerType type of officer for which work is to be given. 
+     * @param time Current time in minutes past 9 a.m.
+     * @return Whether the job is completed after updating the time.
      */
-    public boolean updateTime(Officer.OfficerType officerType, int time) {
+    public boolean incrementTimer(Officer.OfficerType officerType, int time) {
         switch (officerType) {
             case DOCUMEMT_VERIFICATION :
                 documentTime -= 1;

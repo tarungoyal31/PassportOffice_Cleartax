@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package passportscheduling;
 
 import java.util.ArrayList;
@@ -12,8 +7,8 @@ import java.util.LinkedList;
 import java.util.Set;
 
 /**
- *
- * @author tarungoyal
+ * Class for representing passportOffice. This contains all the officers and
+ * is responsible for most of the working of passport office.
  */
 public class PassportOffice {
     private static final int DOCUMENT_VREIFICATION_COUNT = 10;
@@ -70,6 +65,10 @@ public class PassportOffice {
         }
     }
     
+    /**
+     * Starts working of the passport office assuming the time is 9 a.m. and
+     * timer is incremented in minutes.
+     */
     public void startWorking() {
         passportTimer = new PassportTimer();
         for (int i = 0; i < PassportTimer.TOTAL_TIME; i++) {
@@ -81,12 +80,16 @@ public class PassportOffice {
         }
     }
     
+    /**
+     * Increments the timer by 1 minute and takes care of assigning applicants 
+     * to officers and notify them. 
+     */
     public void increaseTimer() {
         for(Officer documentOfficer : documentOfficers) {
             if (documentOfficer.getState() == Officer.OfficerState.IDLE){
                 assignApplicantToOfficer(documentOfficer, waitingApplicants);
             } else {
-                Officer.OfficerState documentOfficerState = documentOfficer.updateTime(passportTimer.getTime());
+                Officer.OfficerState documentOfficerState = documentOfficer.incrementTimer(passportTimer.getTime());
                 if (documentOfficerState == Officer.OfficerState.IDLE) {
                     documentVerifiedApplicants.add(documentOfficer.getApplicant());
                     documentOfficer.setCurrentApplicant(null);
@@ -98,7 +101,7 @@ public class PassportOffice {
             if (policeOfficer.getState() == Officer.OfficerState.IDLE){
                 assignApplicantToOfficer(policeOfficer, documentVerifiedApplicants);
             } else {
-                Officer.OfficerState policeOfficerState = policeOfficer.updateTime(passportTimer.getTime());
+                Officer.OfficerState policeOfficerState = policeOfficer.incrementTimer(passportTimer.getTime());
                 if (policeOfficerState == Officer.OfficerState.IDLE) {
                     policeVerifiedApplicants.add(policeOfficer.getApplicant());
                     policeOfficer.setCurrentApplicant(null);
@@ -110,7 +113,7 @@ public class PassportOffice {
             if (bioMetricOfficer.getState() == Officer.OfficerState.IDLE){
                 assignApplicantToOfficer(bioMetricOfficer, policeVerifiedApplicants);
             } else {
-                Officer.OfficerState bioMetricOfficerState = bioMetricOfficer.updateTime(passportTimer.getTime());
+                Officer.OfficerState bioMetricOfficerState = bioMetricOfficer.incrementTimer(passportTimer.getTime());
                 if (bioMetricOfficerState == Officer.OfficerState.IDLE) {
                     remainingApplicants.remove(bioMetricOfficer.getApplicant());
                     bioMetricOfficer.setCurrentApplicant(null);
@@ -125,8 +128,21 @@ public class PassportOffice {
     }
     
     public void assignApplicantToOfficer(Officer officer, LinkedList<Applicant> applicantList) {
-        Applicant applicant =
-                schedulingStrategy.getNextApplicantForPoliceVerification(applicantList);
+        Applicant applicant;
+        switch (officer.getOfficerType()) {
+            case DOCUMEMT_VERIFICATION:
+                applicant = schedulingStrategy.getNextApplicantForDocumentVerification(
+                        applicantList, passportTimer.getTime());
+                break;
+            case POLICE:
+                applicant = schedulingStrategy.getNextApplicantForPoliceVerification(applicantList);
+                break;
+            case BIOMETRICS:
+                applicant = schedulingStrategy.getNextApplicantForBiometricsVerification(applicantList);
+                break;
+            default:
+                applicant = null;
+        }
         officer.setCurrentApplicant(applicant);
         applicantList.remove(officer.getApplicant());
     }

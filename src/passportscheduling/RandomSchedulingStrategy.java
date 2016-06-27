@@ -1,15 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package passportscheduling;
 
 import java.util.LinkedList;
 
 /**
- *
- * @author tarungoyal
+ * Picks up the next Applicant randomly from the list of applicants at a
+ * particular stage.
  */
 public class RandomSchedulingStrategy implements SchedulingStrategy {
 
